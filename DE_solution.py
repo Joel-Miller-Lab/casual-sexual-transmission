@@ -46,6 +46,9 @@ def dxdt(t, X, rho, beta1, beta2, gamma, Nk, degrees):
     I = 1 - S - R
     return np.array([gamma*I, gamma*pi_I, -beta1*pi_I*theta, beta2*I])
 
+def dIkdt(t, x, gamma, c):
+    return c[t] - gamma*x
+
 def FS(x, G, n): 
     return [x[k] - n[k]*(1-np.exp(-np.sum(G[k]*x)/n[k])) for k in range(len(n))]
 
@@ -158,7 +161,7 @@ if R0 > 1 and np.abs(R0-R0_route)<1e-2:
     R, pi_R, theta, Chi = sol.y[0, :], sol.y[1, :], sol.y[2, :], sol.y[3, :]
     S = np.exp(-Chi)*np.sum(np.array([Sk_0[i]*theta**degrees[i] for i in range(n)]), 0)    
     Psioftheta = Psi(theta, Nk, degrees)
-    
+        
     
     ax.plot(sol.t, 1-S, label = r'Any', ls = ':', lw = 0.75, c = 'k')
     ax.plot(sol.t, 1 - np.exp(-Chi), label = r'Casual', ls = '-.', lw = 0.5, c = 'k')
@@ -168,13 +171,25 @@ if R0 > 1 and np.abs(R0-R0_route)<1e-2:
     Rate_sexual_exposure = beta1*PsiPrime(theta, Nk, degrees)*theta*(1-pi_S-pi_R)*theta
     Rate_casual_exposure = beta2*np.exp(-Chi)*(1-S-R)
     
-    plot_arr = np.exp(-Chi)*theta**degrees[0]
+    # plot_arr = np.exp(-Chi)*theta**degrees[0]
+    # for deg in degrees[1:]:
+    #     #ax2.plot(sol.t, np.exp(-Chi)*theta**deg, label = r'$k = %d$'%(deg), lw = 0.6, ls = ':')
+    #     Sk = Sk_0[deg]*np.exp(-Chi)*theta**deg
+    #     plot_arr = np.vstack((plot_arr, Sk/Sk_0[deg]))
+         #ax2.scatter(sol.t, deg*np.ones(len(sol.t)), c = np.exp(-Chi)*theta**deg, cmap = 'viridis', vmin = 0, vmax = 1, marker = '|', s = 3.2, alpha = 0.5)
+    Sk = Sk_0[0]*np.exp(-Chi)*theta**degrees[0]
+    plot_arr = -np.cumsum(np.exp(gamma*sol.t[0:-1])*np.diff(Sk))/np.exp(gamma*sol.t[0:-1])/Nk[0]
+    ax3.plot(sol.t[0:-1], plot_arr, label = r'$k = %d$'%(0), lw = 0.6, ls = ':', c = 'k')
     for deg in degrees[1:]:
-        #ax2.plot(sol.t, np.exp(-Chi)*theta**deg, label = r'$k = %d$'%(deg), lw = 0.6, ls = ':')
-        plot_arr = np.vstack((plot_arr, np.exp(-Chi)*theta**deg))
-        #ax2.scatter(sol.t, deg*np.ones(len(sol.t)), c = np.exp(-Chi)*theta**deg, cmap = 'viridis', vmin = 0, vmax = 1, marker = '|', s = 3.2, alpha = 0.5)
-    im = ax2.imshow(plot_arr, cmap = 'bone', aspect = 'auto', interpolation = 'none', extent = (0, T[-1], degrees[-1], 0), vmin=0, vmax=1)
-    fig2.colorbar(im)
+        
+        Sk = Sk_0[int(deg)]*np.exp(-Chi)*theta**deg
+        Ik = -np.cumsum(np.exp(gamma*sol.t[0:-1])*np.diff(Sk))/np.exp(gamma*sol.t[0:-1])
+        plot_arr = np.vstack((plot_arr, Ik/Nk[int(deg)]))
+        if int(deg)%10==0:
+            ax3.plot(sol.t[0:-1], Ik/Nk[int(deg)], label = r'$k = %d$'%(deg), lw = 0.6, ls = ':')
+    im = ax2.imshow(plot_arr, cmap = 'bone_r', aspect = 'auto', interpolation = 'none', extent = (0, T[-1], degrees[-1], 0))#, vmin=0, vmax=1)
+    cb = fig2.colorbar(im)
+    cb.ax.set_title(r'$I_k/N_k$')
         
     axins1 = inset_axes(ax, width="25%", height="30%", loc=2, borderpad=2)
     axins1.plot(sol.t, 1-S, label = r'$1-S$', ls = ':', lw = 0.75, c = 'k')
@@ -194,7 +209,7 @@ if R0 > 1 and np.abs(R0-R0_route)<1e-2:
     axins2.set_ylim(0, )
     
     ax.set_xlabel(r'$t$', size = fontsize + 1)
-    ax.set_ylabel(r'Prob. of exposure', size = fontsize + 1)
+    #ax.set_ylabel(r'Prob. of exposure', size = fontsize + 1)
     ax.legend(ncol = 1, loc = 'lower left', frameon = False)
     
     ax.set_xlim(0, 11)
@@ -205,6 +220,13 @@ if R0 > 1 and np.abs(R0-R0_route)<1e-2:
     ax2.legend(ncol = 1, loc = 'lower left', frameon = False)
     
     ax2.set_xlim(0, 11)
+    #ax2.set_ylim(0, 1.05)
+    
+    ax3.set_xlabel(r'$t$', size = fontsize + 1)
+    ax3.set_ylabel(r'$I_k/N_k$', size = fontsize + 1)
+    ax3.legend(ncol = 1, loc = 'lower left', frameon = False)
+    
+    ax3.set_xlim(0, 11)
     #ax2.set_ylim(0, 1.05)
 
 params = {}
