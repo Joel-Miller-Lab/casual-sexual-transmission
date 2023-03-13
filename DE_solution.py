@@ -95,9 +95,9 @@ if solution.converged == False:
         
 # %% Solve ODE - both transmissions AND plotting
 dT = 0.01
-T = np.arange(0, 40, dT)
+T = np.arange(0, 20, dT)
 print('Step Size: ', dT)
-print('Time: ', T[0], T[-1])
+print('Time: ', T[0], T[-1]) 
 X_0 = [0, 0, 1, 0]
 
 print('R_0 from NGM' + '    ' + 'R_0 from route matrix')
@@ -131,22 +131,27 @@ plt.rc('legend', fontsize=fontsize)    # legend fontsize
 
 fig, ax = plt.subplots(1, 1, figsize = (8*3.5/8, 5*3.5/8), constrained_layout = True)
 fig2, ax2 = plt.subplots(1, 1, figsize = (8*3.5/8, 5*3.5/8))
+fig3, ax3 = plt.subplots(1, 1, figsize = (8*3.5/8, 5*3.5/8))
 
 ax.yaxis.tick_right()
 ax.spines['left'].set_visible(False)
 ax.spines['top'].set_visible(False)
-ax.text(.4, 0.8, r'$\mathcal{R}_0 = %.2f$'%R0, transform = ax.transAxes)
-ax.text(.4, 0.5, r'$\mathcal{R}_{\mathrm{c}} = %.2f$'%(G_route[0, 0]) + '\n'+
+ax.text(.75, 0.8, r'$\mathcal{R}_0 = %.2f$'%R0, transform = ax.transAxes)
+ax.text(.75, 0.6, r'$\mathcal{R}_{\mathrm{c}} = %.2f$'%(G_route[0, 0]) + '\n'+
         r'$\mathcal{R}_{\mathrm{s/c}} = %.2f$'%(G_route[1, 0]) + '\n'+
         r'$\mathcal{R}_{\mathrm{s/s}} = %.2f$'%(G_route[1, 1]), transform = ax.transAxes)
 
-ax2.yaxis.tick_right()
-ax2.spines['left'].set_visible(False)
+
+#ax2.spines['left'].set_visible(False)
 ax2.spines['top'].set_visible(False)
-ax2.text(.4, 0.8, r'$\mathcal{R}_0 = %.2f$'%R0, transform = ax2.transAxes)
-ax2.text(.4, 0.5, r'$\mathcal{R}_{\mathrm{c}} = %.2f$'%(G_route[0, 0]) + '\n'+
-        r'$\mathcal{R}_{\mathrm{s/c}} = %.2f$'%(G_route[1, 0]) + '\n'+
-        r'$\mathcal{R}_{\mathrm{s/s}} = %.2f$'%(G_route[1, 1]), transform = ax2.transAxes)
+#ax2.text(.4, 0.8, r'$\mathcal{R}_0 = %.2f$'%R0, transform = ax2.transAxes)
+# ax2.text(.4, 0.5, r'$\mathcal{R}_{\mathrm{c}} = %.2f$'%(G_route[0, 0]) + '\n'+
+#         r'$\mathcal{R}_{\mathrm{s/c}} = %.2f$'%(G_route[1, 0]) + '\n'+
+#         r'$\mathcal{R}_{\mathrm{s/s}} = %.2f$'%(G_route[1, 1]), transform = ax2.transAxes)
+
+ax3.yaxis.tick_right()
+ax3.spines['left'].set_visible(False)
+ax3.spines['top'].set_visible(False)
 
 if R0 > 1 and np.abs(R0-R0_route)<1e-2:
     sol = solve_ivp(lambda t, X: dxdt(t, X, rho, beta1, beta2, gamma, Nk, degrees), t_span=(0, T[-1]), y0 = X_0, method = 'RK45', t_eval = T[1:-1])
@@ -155,40 +160,52 @@ if R0 > 1 and np.abs(R0-R0_route)<1e-2:
     Psioftheta = Psi(theta, Nk, degrees)
     
     
-    ax.plot(sol.t, 1-S, label = r'Proportion infected', ls = ':', lw = 0.75, c = 'k')
-    ax.plot(sol.t, 1 - np.exp(-Chi), label = r'Casual transmission', ls = '-.', lw = 0.5, c = 'k')
-    ax.plot(sol.t, 1 - Psioftheta, label = r'Sexual transmission', lw = 0.5, c = 'k')
+    ax.plot(sol.t, 1-S, label = r'Any', ls = ':', lw = 0.75, c = 'k')
+    ax.plot(sol.t, 1 - np.exp(-Chi), label = r'Casual', ls = '-.', lw = 0.5, c = 'k')
+    ax.plot(sol.t, 1 - Psioftheta, label = r'Sexual', lw = 0.5, c = 'k')
     
     pi_S = np.exp(-Chi)*theta*PsiPrime(theta, Nk, degrees)/PsiPrime(1, Nk, degrees)
     Rate_sexual_exposure = beta1*PsiPrime(theta, Nk, degrees)*theta*(1-pi_S-pi_R)*theta
     Rate_casual_exposure = beta2*np.exp(-Chi)*(1-S-R)
     
-    for deg in np.round(np.linspace(0, degrees[-1], 5)):
-        ax2.plot(sol.t, np.exp(-Chi)*theta**deg, label = r'$k = %d$'%(deg), lw = 0.6, ls = ':')
-    ax2.plot(sol.t, Rate_casual_exposure, ls = '-.', lw = 0.5, c = 'k', label = 'Casual rate')
-    ax2.plot(sol.t, Rate_sexual_exposure, ls = '-', lw = 0.5, c = 'k', label = 'Sexual rate')
-    
-    axins = inset_axes(ax, width="25%", height="30%", loc=2, borderpad=2)
-    axins.plot(sol.t, 1-S, label = r'$1-S$', ls = ':', lw = 0.75, c = 'k')
-    axins.plot(sol.t, 1 - np.exp(-Chi), label = r'$1-e^{-\chi}$', ls = '-.', lw = 0.5, c = 'k')
-    axins.plot(sol.t, 1 - Psioftheta, label = r'$1-\Psi(\theta)$', lw = 0.5, c = 'k')
-    axins.set_xlim(0, T[np.argmin(np.abs(1 - S - 0.1))])
-    axins.set_ylim(10**-7, 0.05)
+    plot_arr = np.exp(-Chi)*theta**degrees[0]
+    for deg in degrees[1:]:
+        #ax2.plot(sol.t, np.exp(-Chi)*theta**deg, label = r'$k = %d$'%(deg), lw = 0.6, ls = ':')
+        plot_arr = np.vstack((plot_arr, np.exp(-Chi)*theta**deg))
+        #ax2.scatter(sol.t, deg*np.ones(len(sol.t)), c = np.exp(-Chi)*theta**deg, cmap = 'viridis', vmin = 0, vmax = 1, marker = '|', s = 3.2, alpha = 0.5)
+    im = ax2.imshow(plot_arr, cmap = 'bone', aspect = 'auto', interpolation = 'none', extent = (0, T[-1], degrees[-1], 0), vmin=0, vmax=1)
+    fig2.colorbar(im)
+        
+    axins1 = inset_axes(ax, width="25%", height="30%", loc=2, borderpad=2)
+    axins1.plot(sol.t, 1-S, label = r'$1-S$', ls = ':', lw = 0.75, c = 'k')
+    axins1.plot(sol.t, 1 - np.exp(-Chi), label = r'$1-e^{-\chi}$', ls = '-.', lw = 0.5, c = 'k')
+    axins1.plot(sol.t, 1 - Psioftheta, label = r'$1-\Psi(\theta)$', lw = 0.5, c = 'k')
+    axins1.set_xlim(0, T[np.argmin(np.abs(1 - S - 0.1))])
+    axins1.set_ylim(10**-7, 0.05)
     if log_inset == 'True':
-        axins.set_yscale('log')
-    axins.minorticks_off()
+        axins1.set_yscale('log')
+    axins1.minorticks_off()
+    
+    axins2 = inset_axes(ax, width="20%", height="30%", borderpad=2, loc=9)
+    axins2.plot(sol.t, Rate_casual_exposure, ls = '-.', lw = 0.5, c = 'k')
+    axins2.plot(sol.t, Rate_sexual_exposure, ls = '-', lw = 0.5, c = 'k')
+    axins2.plot(sol.t[0:-1], -np.diff(S)/dT, ls = ':', lw = 0.75, c = 'k')
+    axins2.set_xlim(0, 11)
+    axins2.set_ylim(0, )
     
     ax.set_xlabel(r'$t$', size = fontsize + 1)
-    ax.legend(ncol = 1, loc = 'upper right', frameon = False)
+    ax.set_ylabel(r'Prob. of exposure', size = fontsize + 1)
+    ax.legend(ncol = 1, loc = 'lower left', frameon = False)
     
-    #ax.set_xlim(0, 11)
+    ax.set_xlim(0, 11)
     ax.set_ylim(0, 1.05)
     
     ax2.set_xlabel(r'$t$', size = fontsize + 1)
-    ax2.legend(ncol = 1, loc = 'upper right', frameon = False)
+    ax2.set_ylabel(r'$k$', size = fontsize + 1)
+    ax2.legend(ncol = 1, loc = 'lower left', frameon = False)
     
-    #ax2.set_xlim(0, 11)
-    ax2.set_ylim(0, 1.05)
+    ax2.set_xlim(0, 11)
+    #ax2.set_ylim(0, 1.05)
 
 params = {}
 params['N0'] = N0
@@ -203,10 +220,10 @@ params['beta2 (computed)'] = round(beta2, 3)
 
 fname = str(round(time.time()))
 
-fig.savefig('DE-'+fname+'.pdf', metadata = {'Subject': str(params)})
-fig2.savefig('DE-instant-'+fname+'.pdf', metadata = {'Subject': str(params)})
-#fig.savefig('11-'+fname+'.png', metadata = {'Description': str(params)}, dpi = 300)
-fig2.savefig('DE-instant-'+fname+'.png', metadata = {'Description': str(params)}, dpi = 300)
+#fig.savefig('DE-'+fname+'.pdf', metadata = {'Subject': str(params)})
+#fig2.savefig('DE-instant-'+fname+'.pdf', metadata = {'Subject': str(params)})
+fig.savefig('DE-'+fname+'.png', metadata = {'Description': str(params)}, dpi = 300)
+fig2.savefig('DE-k-'+fname+'.png', metadata = {'Description': str(params)}, dpi = 300)
 
 plt.close(fig)
 
