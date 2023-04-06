@@ -114,15 +114,20 @@ R0_route = np.amax(np.abs((np.linalg.eigvals(G_route))))
 print('%.3f'%R0, '           ', '%.3f'%R0_route)
 
 
-plt.rcParams['text.usetex'] = True
-plt.rcParams['font.family'] = 'serif'
-plt.rcParams['text.latex.preamble'] = r'\usepackage{lmodern}'
-#plt.rc('text', usetex=True)
-#plt.rcParams['font.size'] = '6'
-fontsize= 6
-plt.rcParams['axes.linewidth'] = 0.4
-plt.rcParams['xtick.major.width'] = 0.4
-plt.rcParams['ytick.major.width'] = 0.4
+#plt.rcParams['font.sans-serif'] = "CMU Serif"
+plt.rcParams['font.family'] = 'Helvetica'
+plt.rcParams['mathtext.fontset'] = 'cm'
+#plt.rcParams['axes.unicode_minus'] = False
+#plt.rcParams['svg.fonttype'] = 'none'
+
+# plt.rcParams['text.usetex'] = True
+# plt.rcParams['font.family'] = 'serif'
+# plt.rcParams['text.latex.preamble'] = r'\usepackage{lmodern}'
+
+fontsize= 4
+plt.rcParams['axes.linewidth'] = 0.2
+plt.rcParams['xtick.major.width'] = 0.2
+plt.rcParams['ytick.major.width'] = 0.2
 plt.rcParams['xtick.direction'] = 'in'
 plt.rcParams['ytick.direction'] = 'in'
 plt.rc('font', size=fontsize)          # controls default text sizes
@@ -132,29 +137,34 @@ plt.rc('xtick', labelsize=fontsize)    # fontsize of the tick labels
 plt.rc('ytick', labelsize=fontsize)    # fontsize of the tick labels
 plt.rc('legend', fontsize=fontsize)    # legend fontsize
 
-fig, ax = plt.subplots(1, 1, figsize = (8*3.5/8, 5*3.5/8), constrained_layout = True)
-fig2, ax2 = plt.subplots(1, 1, figsize = (8*3.5/8, 5*3.5/8), constrained_layout = True)
-fig3, ax3 = plt.subplots(1, 1, figsize = (8*3.5/8, 5*3.5/8))
+#fig, ax = plt.subplots(1, 1, figsize = (8*3.5/8, 5*3.5/8), constrained_layout = True)
+#fig2, ax2 = plt.subplots(1, 1, figsize = (8*3.5/8, 5*3.5/8))
+#fig3, ax3 = plt.subplots(1, 1, figsize = (8*3.5/8, 5*3.5/8), constrained_layout = True)
+FIG, [ax, ax2, ax3] = plt.subplots(3, 1, figsize = ((5*3.5/8, 8*3.5/8)), constrained_layout = True)
 
 ax.yaxis.tick_right()
 ax.spines['left'].set_visible(False)
 ax.spines['top'].set_visible(False)
-ax.text(.75, 0.8, r'$\mathcal{R}_0 = %.2f$'%R0, transform = ax.transAxes)
-ax.text(.75, 0.6, r'$\mathcal{R}_{\mathrm{c}} = %.2f$'%(G_route[0, 0]) + '\n'+
-        r'$\mathcal{R}_{\mathrm{s/c}} = %.2f$'%(G_route[1, 0]) + '\n'+
-        r'$\mathcal{R}_{\mathrm{s/s}} = %.2f$'%(G_route[1, 1]), transform = ax.transAxes)
 
-
-ax2.spines['right'].set_visible(False)
-ax2.spines['top'].set_visible(False)
-#ax2.text(.4, 0.8, r'$\mathcal{R}_0 = %.2f$'%R0, transform = ax2.transAxes)
-# ax2.text(.4, 0.5, r'$\mathcal{R}_{\mathrm{c}} = %.2f$'%(G_route[0, 0]) + '\n'+
+# ax.text(.75, 0.8, r'$\mathcal{R}_0 = %.2f$'%R0, transform = ax.transAxes)
+# ax.text(.75, 0.6, r'$\mathcal{R}_{\mathrm{c}} = %.2f$'%(G_route[0, 0]) + '\n'+
 #         r'$\mathcal{R}_{\mathrm{s/c}} = %.2f$'%(G_route[1, 0]) + '\n'+
-#         r'$\mathcal{R}_{\mathrm{s/s}} = %.2f$'%(G_route[1, 1]), transform = ax2.transAxes)
+#         r'$\mathcal{R}_{\mathrm{s/s}} = %.2f$'%(G_route[1, 1]), transform = ax.transAxes)
+
+Title = r'$\mathcal{R}_0 = %.2f$'%R0 + ', ' + r'$\mathcal{R}_{\mathrm{c}} = %.2f$'%(G_route[0, 0]) + '\n'+ r'$\mathcal{R}_{\mathrm{s/c}} = %.2f$'%(G_route[1, 0]) + ', '+ r'$\mathcal{R}_{\mathrm{s/s}} = %.2f$'%(G_route[1, 1])
+ax3.set_title(Title, y=-0.5)
 
 ax3.yaxis.tick_right()
 ax3.spines['left'].set_visible(False)
 ax3.spines['top'].set_visible(False)
+#ax3.text(.4, 0.8, r'$\mathcal{R}_0 = %.2f$'%R0, transform = ax3.transAxes)
+# ax3.text(.4, 0.5, r'$\mathcal{R}_{\mathrm{c}} = %.2f$'%(G_route[0, 0]) + '\n'+
+#         r'$\mathcal{R}_{\mathrm{s/c}} = %.2f$'%(G_route[1, 0]) + '\n'+
+#         r'$\mathcal{R}_{\mathrm{s/s}} = %.2f$'%(G_route[1, 1]), transform = ax3.transAxes)
+
+ax2.yaxis.tick_right()
+ax2.spines['left'].set_visible(False)
+ax2.spines['top'].set_visible(False)
 
 if R0 > 1 and np.abs(R0-R0_route)<1e-2:
     sol = solve_ivp(lambda t, X: dxdt(t, X, rho, beta1, beta2, gamma, Nk, degrees), t_span=(0, T[-1]), y0 = X_0, method = 'BDF', t_eval = T[1:-1])
@@ -174,24 +184,26 @@ if R0 > 1 and np.abs(R0-R0_route)<1e-2:
     
     # plot_arr = np.exp(-Chi)*theta**degrees[0]
     # for deg in degrees[1:]:
-    #     #ax2.plot(sol.t, np.exp(-Chi)*theta**deg, label = r'$k = %d$'%(deg), lw = 0.6, ls = ':')
+    #     #ax3.plot(sol.t, np.exp(-Chi)*theta**deg, label = r'$k = %d$'%(deg), lw = 0.6, ls = ':')
     #     Sk = Sk_0[deg]*np.exp(-Chi)*theta**deg
     #     plot_arr = np.vstack((plot_arr, Sk/Sk_0[deg]))
-         #ax2.scatter(sol.t, deg*np.ones(len(sol.t)), c = np.exp(-Chi)*theta**deg, cmap = 'viridis', vmin = 0, vmax = 1, marker = '|', s = 3.2, alpha = 0.5)
+         #ax3.scatter(sol.t, deg*np.ones(len(sol.t)), c = np.exp(-Chi)*theta**deg, cmap = 'viridis', vmin = 0, vmax = 1, marker = '|', s = 3.2, alpha = 0.5)
     Sk = Sk_0[0]*np.exp(-Chi)*theta**degrees[0]
     plot_arr = -np.cumsum(np.exp(gamma*sol.t[0:-1])*np.diff(Sk))/np.exp(gamma*sol.t[0:-1])/Nk[0]
-    #ax3.plot(sol.t[0:-1], plot_arr, label = r'$k = %d$'%(0), lw = 0.6, ls = ':', c = 'gray')
+    #ax2.plot(sol.t[0:-1], plot_arr, label = r'$k = %d$'%(0), lw = 0.6, ls = ':', c = 'gray')
     
     for deg in degrees[1:]:    
         Sk = Sk_0[int(deg)]*np.exp(-Chi)*theta**deg
         Ik = -np.cumsum(np.exp(gamma*sol.t[0:-1])*np.diff(Sk))/np.exp(gamma*sol.t[0:-1])
         plot_arr = np.vstack((plot_arr, Ik/Nk[int(deg)]))
         # if int(deg)%10==0:
-        #     ax3.plot(sol.t[0:-1], Ik/Nk[int(deg)], label = r'$k = %d$'%(deg), lw = 0.6, ls = ':')
-    im = ax2.imshow(plot_arr, cmap = 'bone_r', aspect = 'auto', interpolation = 'none', extent = (0, T[-1], degrees[-1]+1, 0))#, vmin=0, vmax=1)
-    yticks = list(range(0, int(degrees[-1])+1, int(len(degrees)/10)))
-    ax2.set_yticks(yticks)
-    cb = fig2.colorbar(im)
+        #     ax2.plot(sol.t[0:-1], Ik/Nk[int(deg)], label = r'$k = %d$'%(deg), lw = 0.6, ls = ':')
+    #im = ax3.imshow(plot_arr, cmap = 'bone_r', aspect = 'auto', interpolation = 'none', extent = (0, T[-1], degrees[-1]+1, 0))#, vmin=0, vmax=1)
+    im = ax3.imshow(plot_arr, cmap = 'hot', aspect = 'auto', interpolation = 'none', extent = (0, T[-1], degrees[-1]+1, 0))#, vmin=0, vmax=1)
+    yticks = list(range(0, int(degrees[-1])+1, int(len(degrees)/5)))
+    ax3.set_yticks(yticks)
+    #cb = fig3.colorbar(im)
+    cb = FIG.colorbar(im, ax = ax3, aspect = 15, location = 'left')
     cb.ax.set_title(r'$I_k/N_k$')
         
     axins1 = inset_axes(ax, width="20%", height="30%", loc=2, borderpad=2)
@@ -200,25 +212,30 @@ if R0 > 1 and np.abs(R0-R0_route)<1e-2:
     axins1.plot(sol.t, 1 - Psioftheta, label = r'$1-\Psi(\theta)$', lw = 0.5, c = 'k')
     axins1.set_xlim(0, T[np.argmin(np.abs(1 - S - 0.1))])
     axins1.set_ylim(10**-7, 0.05)
-    axins1.set_title('Initial dynamics')
+    #axins1.set_title('Initial dynamics')
     if log_inset == 'True':
         axins1.set_yscale('log')
     axins1.minorticks_off()
     
-    axins2 = inset_axes(ax, width="20%", height="30%", borderpad=2, loc=9)
-    axins2.plot(sol.t, Rate_casual_infections, ls = '-.', lw = 0.5, c = 'k')
-    axins2.plot(sol.t, Rate_sexual_infections, ls = '-', lw = 0.5, c = 'k')
-    axins2.plot(sol.t, Rate_casual_infections + Rate_sexual_infections, ls = ':', lw = 0.5, c = 'k')
+    ax2.plot(sol.t, Rate_casual_infections + Rate_sexual_infections, ls = ':', lw = 0.75, c = 'k', label = 'Any')
+    ax2.plot(sol.t, Rate_casual_infections, ls = '-.', lw = 0.5, c = 'k', label = 'Casual')
+    ax2.plot(sol.t, Rate_sexual_infections, ls = '-', lw = 0.5, c = 'k', label = 'Sexual')
+    
+    
+    # axins2 = inset_axes(ax, width="20%", height="30%", borderpad=2, loc=9)
+    # axins2.plot(sol.t, Rate_casual_infections, ls = '-.', lw = 0.5, c = 'k')
+    # axins2.plot(sol.t, Rate_sexual_infections, ls = '-', lw = 0.5, c = 'k')
+    # axins2.plot(sol.t, Rate_casual_infections + Rate_sexual_infections, ls = ':', lw = 0.5, c = 'k')
     #axins2.plot(sol.t, Rate_casual_exposure, ls = '-.', lw = 0.5, c = 'k')
     #axins2.plot(sol.t, Rate_sexual_exposure, ls = '-', lw = 0.5, c = 'k')
     
     #axins2.plot(sol.t[0:-1], -np.diff(S)/dT, ls = ':', lw = 0.75, c = 'k')
-    axins2.set_xlim(0, T[-1])
-    axins2.set_ylim(0, )
-    axins2.set_title('New infections rate')
+    # axins2.set_xlim(0, T[-1])
+    # axins2.set_ylim(0, )
+    # axins2.set_title('New infections rate')
     
-    #ax3.plot(sol.t, Rate_casual_exposure, label = r'Casual', lw = 1, ls = '-', c = 'k')
-    #ax3.plot(sol.t, Rate_sexual_exposure, label = r'Sexual', lw = 1, ls = '--', c = 'k')
+    #ax2.plot(sol.t, Rate_casual_exposure, label = r'Casual', lw = 1, ls = '-', c = 'k')
+    #ax2.plot(sol.t, Rate_sexual_exposure, label = r'Sexual', lw = 1, ls = '--', c = 'k')
     # axins3 = inset_axes(ax, width="20%", height="30%", borderpad=2, loc=1)
     # im3 = axins3.imshow(plot_arr, cmap = 'bone_r', aspect = 'auto', interpolation = 'none', extent = (0, T[-1], degrees[-1], 0))#, vmin=0, vmax=1)
     # #cb3 = fig.colorbar(im3, cax=axins3)
@@ -229,29 +246,26 @@ if R0 > 1 and np.abs(R0-R0_route)<1e-2:
     # for side in axins3.spines.keys():  # 'top', 'bottom', 'left', 'right'
     #     axins3.spines[side].set_linewidth(0.2)
     
-    ax.set_xlabel(r'$t$', size = fontsize + 1)
-    ax.set_ylabel(r'Exposure probability', size = fontsize + 1)
+    #ax.set_xlabel(r'$t$', size = fontsize + 1)
+    ax.set_ylabel('Cumulative probability \n of exposure', size = fontsize + 1)
     ax.yaxis.set_label_position("right")
-
-    ax.legend(ncol = 1, loc = 'lower left', frameon = False)
-    
+    ax.legend(ncol = 3, loc = 'upper right', frameon = False)
     ax.set_xlim(0, T[-1])
     ax.set_ylim(0, 1.05)    
-    ax2.set_xlabel(r'$t$', size = fontsize + 1)
-    ax2.set_ylabel(r'$k$', size = fontsize + 1)
-    ax2.legend(ncol = 1, loc = 'lower left', frameon = False)
     
-    #ax2.set_xlim(0, 11)
-    ax2.set_xlim(0, T[-1])
-    #ax2.set_ylim(0, 1.05)
-    
-    ax3.set_xlabel(r'$t$', size = fontsize + 1)
-    ax3.set_ylabel(r'Rate', size = fontsize + 1)
-    ax3.legend(ncol = 1, frameon = False)
-    
+    ax3.set_xlabel('Time', size = fontsize + 1)
+    ax3.set_ylabel('No. of sexual partners', size = fontsize + 1)
+    ax3.yaxis.set_label_position("right")
+    #ax3.legend(ncol = 1, loc = 'lower left', frameon = False)
     ax3.set_xlim(0, T[-1])
-    #ax3.set_ylim(0, 0.01)
-
+    
+    #ax2.set_xlabel(r'$t$', size = fontsize + 1)
+    ax2.set_ylabel('Rate of \n new infections', size = fontsize + 1)
+    ax2.yaxis.set_label_position("right")
+    ax2.legend(ncol = 1, frameon = False)
+    ax2.set_xlim(0, T[-1])
+    ax2.set_ylim(0, )
+    
 params = {}
 params['N0'] = N0
 params['alpha'] = round(alpha, 3)
@@ -266,12 +280,12 @@ params['beta2 (computed)'] = round(beta2, 3)
 fname = str(round(time.time()))
 
 #fig.savefig('DE-'+fname+'.pdf', metadata = {'Subject': str(params)})
-#fig2.savefig('DE-instant-'+fname+'.pdf', metadata = {'Subject': str(params)})
+#fig3.savefig('DE-instant-'+fname+'.pdf', metadata = {'Subject': str(params)})
+FIG.savefig('DE-combined-'+fname+'.pdf', metadata = {'Subject': str(params)})
 
-fig.savefig('DE-'+fname+'.png', metadata = {'Description': str(params)}, dpi = 300)
-fig2.savefig('DE-k-'+fname+'.png', metadata = {'Description': str(params)}, dpi = 300)
-
-
+#fig.savefig('DE-'+fname+'.png', metadata = {'Description': str(params)}, dpi = 300)
+#fig3.savefig('DE-k-'+fname+'.png', metadata = {'Description': str(params)}, dpi = 300)
+FIG.savefig('DE-combined-'+fname+'.png', metadata = {'Description': str(params)}, dpi = 600)
 
 
 
